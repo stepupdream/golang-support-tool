@@ -3,9 +3,21 @@ package csv
 import (
 	"bufio"
 	"encoding/csv"
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
+
+	"github.com/pkg/errors"
+	"github.com/stepupdream/golang-support-tool/util"
 )
+
+// Key Make keys into structures to achieve multidimensional arrays.
+type Key struct {
+	Id  int
+	Key string
+}
 
 // LoadCsv Reading CSV files
 func LoadCsv(filepath string, isFilter bool) [][]string {
@@ -43,4 +55,76 @@ func LoadCsv(filepath string, isFilter bool) [][]string {
 	}
 
 	return rows
+}
+
+// CsvToMap
+// Replacing CSV data (two-dimensional array of height and width) into a multidimensional associative array in a format
+// that facilitates direct value specification by key.
+func CsvToMap(rows [][]string, columnNumbers []int, filepath string) map[Key]string {
+	result := make(map[Key]string)
+	keyName := map[int]string{}
+	findIdColumn := false
+	idColumnNumber := 0
+
+	for rowNumber, row := range rows {
+		for columnNumber, value := range row {
+			// The first line is the key.
+			if rowNumber == 0 {
+				if value == "id" {
+					findIdColumn = true
+					idColumnNumber = columnNumber
+				}
+				keyName[columnNumber] = value
+				continue
+			}
+
+			if util.IntContains(columnNumbers, columnNumber) {
+				id, _ := strconv.Atoi(row[idColumnNumber])
+				result[Key{id, keyName[columnNumber]}] = value
+			}
+		}
+	}
+
+	if !findIdColumn {
+		log.Fatal("CSV without ID column cannot be read : ", filepath)
+	}
+
+	return result
+}
+
+func PluckId(csv map[Key]string) []int {
+	var ids []int
+
+	for mapKey, _ := range csv {
+		if mapKey.Key == "id" {
+			ids = append(ids, mapKey.Id)
+		}
+	}
+	return ids
+}
+
+func GetCSVFilePaths(path string) ([]string, error) {
+	var paths []string
+
+	// Recursively retrieve directories and files. (use WalkDir since Walk is now deprecated)
+	err := filepath.WalkDir(path, func(path string, info fs.DirEntry, err error) error {
+		if err != nil {
+			return errors.Wrap(err, "failed filepath.WalkDir")
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		extension := filepath.Ext(path)
+		if extension != ".csv" {
+			return nil
+		}
+
+		paths = append(paths, path)
+
+		return nil
+	})
+
+	return paths, err
 }
