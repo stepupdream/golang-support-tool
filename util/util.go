@@ -1,6 +1,10 @@
 package util
 
-import "os"
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
 
 func StrContains(slice []string, target string) bool {
 	for _, value := range slice {
@@ -46,4 +50,9 @@ func MergeMap(m1, m2 map[string]interface{}) map[string]interface{} {
 func FileExists(filePath string) bool {
 	_, err := os.Stat(filePath)
 	return err == nil
+}
+
+func KeyWait(message string) {
+	fmt.Println(message)
+	bufio.NewScanner(os.Stdin).Scan()
 }

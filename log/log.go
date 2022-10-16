@@ -1,8 +1,6 @@
 package log
 
 import (
-	"bufio"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -21,9 +19,4 @@ func LogSetting(filename string) {
 
 	// Specify log output destination.
 	log.SetOutput(multiLogFile)
-}
-
-func KeyWait(message string) {
-	fmt.Println(message)
-	bufio.NewScanner(os.Stdin).Scan()
 }
