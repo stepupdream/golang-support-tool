@@ -80,6 +80,10 @@ func CsvToMap(rows [][]string, columnNumbers []int, filepath string) map[Key]str
 
 			if util.IntContains(columnNumbers, columnNumber) {
 				id, _ := strconv.Atoi(row[idColumnNumber])
+
+				if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
+					log.Fatal("ID is not unique : ", filepath)
+				}
 				result[Key{id, keyName[columnNumber]}] = value
 			}
 		}
