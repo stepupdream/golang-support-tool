@@ -133,7 +133,7 @@ func GetCSVFilePaths(path string) ([]string, error) {
 	return paths, err
 }
 
-func isArrayUnique(args []int) bool {
+func IsArrayUnique(args []int) bool {
 	encountered := map[int]bool{}
 	count := len(args)
 	for i := 0; i < count; i++ {
