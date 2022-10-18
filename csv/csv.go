@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
-	"github.com/stepupdream/golang-support-tool/util"
+	"github.com/stepupdream/golang-support-tool/array"
 )
 
 // Key Make keys into structures to achieve multidimensional arrays.
@@ -57,10 +57,10 @@ func LoadCsv(filepath string, isFilter bool) [][]string {
 	return rows
 }
 
-// CsvToMap
+// ConvertMap
 // Replacing CSV data (two-dimensional array of height and width) into a multidimensional associative array in a format
 // that facilitates direct value specification by key.
-func CsvToMap(rows [][]string, columnNumbers []int, filepath string) map[Key]string {
+func ConvertMap(rows [][]string, columnNumbers []int, filepath string) map[Key]string {
 	result := make(map[Key]string)
 	keyName := map[int]string{}
 	findIdColumn := false
@@ -78,7 +78,7 @@ func CsvToMap(rows [][]string, columnNumbers []int, filepath string) map[Key]str
 				continue
 			}
 
-			if util.IntContains(columnNumbers, columnNumber) {
+			if array.IntContains(columnNumbers, columnNumber) {
 				id, _ := strconv.Atoi(row[idColumnNumber])
 
 				if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
@@ -131,18 +131,4 @@ func GetCSVFilePaths(path string) ([]string, error) {
 	})
 
 	return paths, err
-}
-
-func IsArrayUnique(args []int) bool {
-	encountered := map[int]bool{}
-	count := len(args)
-	for i := 0; i < count; i++ {
-		if !encountered[args[i]] {
-			encountered[args[i]] = true
-		} else {
-			return false
-		}
-	}
-
-	return true
 }

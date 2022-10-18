@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func LogSetting(filename string) {
+func Setting(filename string) {
 	// Open file for write/read logging. (if not, generate one)
 	logfile, _ := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
