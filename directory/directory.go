@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func ExistDirectory(path string) bool {
+func Exist(path string) bool {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false
@@ -13,7 +13,7 @@ func ExistDirectory(path string) bool {
 	return true
 }
 
-func GetDirectoryNames(path string) []string {
+func GetNames(path string) []string {
 	dir, err := os.Open(path)
 	if err != nil {
 		log.Fatal("Not found : ", err)
