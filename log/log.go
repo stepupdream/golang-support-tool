@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func Setting(filename string) {
+func Setting(filename string, isDebug bool) {
 	// Open file for write/read logging. (if not, generate one)
 	logfile, _ := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
@@ -15,7 +15,11 @@ func Setting(filename string) {
 
 	// Log output settings (display date and time)
 	// Adding log.Llongfile will also output the log output points.
-	log.SetFlags(log.Ldate | log.Ltime)
+	if isDebug {
+		log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+	} else {
+		log.SetFlags(log.Ldate | log.Ltime)
+	}
 
 	// Specify log output destination.
 	log.SetOutput(multiLogFile)
