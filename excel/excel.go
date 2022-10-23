@@ -1,11 +1,9 @@
 package excel
 
 import (
-	baseCSV "encoding/csv"
 	"fmt"
 	"io/fs"
 	"log"
-	"os"
 	"path/filepath"
 	"reflect"
 
@@ -52,37 +50,20 @@ func ToCsv(excelPath string, csvPath string, sheetIndex int) (string, error) {
 		}
 	}()
 
-	rows, err := excel.GetRows(excel.GetSheetName(sheetIndex))
+	rowsExcel, err := excel.GetRows(excel.GetSheetName(sheetIndex))
 	if err != nil {
 		log.Fatal("Failed to open Excel file : ", err)
 	}
 
 	if file.Exists(csvPath) {
-		csvFile, err := os.Open(csvPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer func(file *os.File) {
-			err := file.Close()
-			if err != nil {
-
-			}
-		}(csvFile)
-
-		reader := baseCSV.NewReader(csvFile)
-		records, err := reader.ReadAll()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if reflect.DeepEqual(rows, records) {
+		rowsCsv := csv.LoadCsv(csvPath, false)
+		if reflect.DeepEqual(rowsExcel, rowsCsv) {
 			fmt.Println("[  SKIP  ] ", excelPath)
 			return csvPath, nil
 		}
 	}
 
-	csv.NewFile(csvPath, rows)
-
+	csv.NewFile(csvPath, rowsExcel)
 	fmt.Println("[COMPLETE] ", excelPath)
 
 	return csvPath, nil
