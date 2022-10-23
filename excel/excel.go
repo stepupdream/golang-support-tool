@@ -59,7 +59,7 @@ func ToCsv(excelPath string, csvPath string, sheetIndex int) (string, error) {
 		rowsCsv := csv.LoadCsv(csvPath, false)
 		if reflect.DeepEqual(rowsExcel, rowsCsv) {
 			fmt.Println("[  SKIP  ] ", excelPath)
-			return csvPath, nil
+			return "", nil
 		}
 	}
 

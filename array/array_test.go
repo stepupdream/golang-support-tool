@@ -115,3 +115,79 @@ func TestNextArrayValue(t *testing.T) {
 		})
 	}
 }
+
+func TestStringUnique(t *testing.T) {
+	type args struct {
+		values []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "StringUnique",
+			args: args{[]string{"a", "e", "b", "e", "d"}},
+			want: []string{"a", "e", "b", "d"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := StringUnique(tt.args.values); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("StringUnique() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIntUnique(t *testing.T) {
+	type args struct {
+		values []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "IntUnique",
+			args: args{[]int{1, 1, 2, 2, 3, 5}},
+			want: []int{1, 2, 3, 5},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IntUnique(tt.args.values); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("IntUnique() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPluckStringByIndex(t *testing.T) {
+	type args struct {
+		rows  [][]string
+		index int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "PluckStringByIndex",
+			args: args{
+				rows:  [][]string{{"a", "aaa"}, {"b", "bbb"}, {"c", "ccc"}},
+				index: 0,
+			},
+			want: []string{"a", "b", "c"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := PluckStringByIndex(tt.args.rows, tt.args.index); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PluckStringByIndex() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

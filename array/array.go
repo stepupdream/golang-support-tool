@@ -111,3 +111,41 @@ func SliceString(all []string, start string, end string) []string {
 
 	return result
 }
+
+func StringUnique(values []string) []string {
+	tmp := make(map[string]bool)
+	var result []string
+
+	for _, value := range values {
+		if !tmp[value] {
+			tmp[value] = true
+			result = append(result, value)
+		}
+	}
+
+	return result
+}
+
+func IntUnique(values []int) []int {
+	tmp := make(map[int]bool)
+	var result []int
+
+	for _, value := range values {
+		if !tmp[value] {
+			tmp[value] = true
+			result = append(result, value)
+		}
+	}
+
+	return result
+}
+
+func PluckStringByIndex(rows [][]string, index int) []string {
+	var result []string
+
+	for _, row := range rows {
+		result = append(result, row[index])
+	}
+
+	return result
+}

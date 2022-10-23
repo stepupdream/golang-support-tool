@@ -31,3 +31,16 @@ func FindFilePathParentDir(filename string) string {
 func GetNameWithoutExtension(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }
+
+func BaseNamesByArray(paths []string, withExtension bool) []string {
+	var result []string
+	for _, name := range paths {
+		if withExtension {
+			result = append(result, filepath.Base(name))
+		} else {
+			result = append(result, GetNameWithoutExtension(name))
+		}
+	}
+
+	return result
+}
