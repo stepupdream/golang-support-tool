@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-func Exists(filename string) bool {
-	_, err := os.Stat(filename)
+func Exists(path string) bool {
+	_, err := os.Stat(path)
 	return err == nil
 }
 

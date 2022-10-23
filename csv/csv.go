@@ -107,7 +107,7 @@ func PluckId(csv map[Key]string) []int {
 	return ids
 }
 
-func GetCSVFilePaths(path string) ([]string, error) {
+func GetFilePathRecursive(path string) ([]string, error) {
 	var paths []string
 
 	// Recursively retrieve directories and files. (use WalkDir since Walk is now deprecated)
