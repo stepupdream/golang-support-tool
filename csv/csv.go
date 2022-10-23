@@ -132,3 +132,24 @@ func GetCSVFilePaths(path string) ([]string, error) {
 
 	return paths, err
 }
+
+func NewFile(path string, rows [][]string) {
+	// create allows you to create a new file and overwrite a new file.
+	csvFile, err := os.Create(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Make it with BOM to avoid garbled characters.
+	_, err = csvFile.Write([]byte{0xEF, 0xBB, 0xBF})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writer := csv.NewWriter(csvFile)
+	defer writer.Flush()
+
+	if err := writer.WriteAll(rows); err != nil {
+		log.Fatal(err)
+	}
+}
