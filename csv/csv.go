@@ -78,7 +78,7 @@ func ConvertMap(rows [][]string, columnNumbers []int, filepath string) map[Key]s
 				continue
 			}
 
-			if array.IntContains(columnNumbers, columnNumber) {
+			if len(columnNumbers) == 0 || array.IntContains(columnNumbers, columnNumber) {
 				id, _ := strconv.Atoi(row[idColumnNumber])
 
 				if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
