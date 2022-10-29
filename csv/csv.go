@@ -182,7 +182,7 @@ func NewFile(path string, rows [][]string) {
 	}
 }
 
-func deleteCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+func DeleteCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 	baseIds := PluckId(baseCSV)
 
 	for key, _ := range editCSV {
@@ -197,7 +197,7 @@ func deleteCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 	return baseCSV
 }
 
-func insertCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+func InsertCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 	baseIds := PluckId(baseCSV)
 	editIds := PluckId(editCSV)
 
@@ -219,7 +219,7 @@ func insertCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 	return result
 }
 
-func updateCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+func UpdateCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 	baseIds := PluckId(baseCSV)
 	editIds := PluckId(editCSV)
 	for _, id := range editIds {
