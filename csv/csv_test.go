@@ -37,7 +37,7 @@ func TestDeleteCSV(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := deleteCSV(tt.args.baseCSV, tt.args.editCSV); !reflect.DeepEqual(got, tt.want) {
+			if got := DeleteCSV(tt.args.baseCSV, tt.args.editCSV); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("deleteCSV() = %v, want %v", got, tt.want)
 			}
 		})
@@ -76,7 +76,7 @@ func TestInsertCSV(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := insertCSV(tt.args.baseCSV, tt.args.editCSV); !reflect.DeepEqual(got, tt.want) {
+			if got := InsertCSV(tt.args.baseCSV, tt.args.editCSV); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("insertCSV() = %v, want %v", got, tt.want)
 			}
 		})
@@ -112,7 +112,7 @@ func TestUpdateCSV(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := updateCSV(tt.args.baseCSV, tt.args.editCSV); !reflect.DeepEqual(got, tt.want) {
+			if got := UpdateCSV(tt.args.baseCSV, tt.args.editCSV); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("updateCSV() = %v, want %v", got, tt.want)
 			}
 		})
@@ -149,8 +149,9 @@ func TestLoadFileFirstContent(t *testing.T) {
 
 func TestLoadCsv(t *testing.T) {
 	type args struct {
-		filepath string
-		isFilter bool
+		filepath       string
+		isRowFilter    bool
+		isColumnFilter bool
 	}
 	tests := []struct {
 		name  string
@@ -161,38 +162,34 @@ func TestLoadCsv(t *testing.T) {
 		{
 			name: "LoadCsv",
 			args: args{
-				filepath: "test/sample2.csv",
-				isFilter: false,
+				filepath:       "test/sample2.csv",
+				isRowFilter:    false,
+				isColumnFilter: false,
 			},
 			want: [][]string{
 				{"id", "sample", "#", "level"},
-				{"1", "aaa", "2", "13"},
+				{"#1", "aaa", "2", "13"},
 				{"2", "bbb", "3", "43"},
 			},
-			want1: []string{"id", "sample", "#", "level"},
 		},
 		{
-			name: "LoadCsv",
+			name: "LoadCsv2",
 			args: args{
-				filepath: "test/sample2.csv",
-				isFilter: true,
+				filepath:       "test/sample2.csv",
+				isRowFilter:    true,
+				isColumnFilter: true,
 			},
 			want: [][]string{
 				{"id", "sample", "level"},
-				{"1", "aaa", "13"},
 				{"2", "bbb", "43"},
 			},
-			want1: []string{"id", "sample", "level"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := LoadCsv(tt.args.filepath, tt.args.isFilter)
+			got := LoadCsv(tt.args.filepath, tt.args.isRowFilter, tt.args.isColumnFilter)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("LoadCsv() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("LoadCsv() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

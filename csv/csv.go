@@ -21,7 +21,7 @@ type Key struct {
 }
 
 // LoadCsv Reading CSV files
-func LoadCsv(filepath string, isFilter bool) ([][]string, []string) {
+func LoadCsv(filepath string, isRowFilter bool, isColumnFilter bool) [][]string {
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal("CSVFileOpenError: ", err)
@@ -47,7 +47,7 @@ func LoadCsv(filepath string, isFilter bool) ([][]string, []string) {
 	}
 
 	csvReader := csv.NewReader(reader)
-	if isFilter {
+	if isRowFilter {
 		csvReader.Comment = '#'
 	}
 	rows, err := csvReader.ReadAll()
@@ -55,19 +55,18 @@ func LoadCsv(filepath string, isFilter bool) ([][]string, []string) {
 		log.Fatal("CSVReadAllError: ", err)
 	}
 
-	enableColumnNames, newRows := filterColumn(rows, isFilter)
+	if isColumnFilter {
+		return filterColumn(rows, isColumnFilter)
+	}
 
-	return newRows, enableColumnNames
+	return rows
 }
 
-func filterColumn(rows [][]string, isFilter bool) ([]string, [][]string) {
-	var enableColumnNames []string
+func filterColumn(rows [][]string, isFilter bool) [][]string {
 	var disableColumnIndexes []int
 	for index, value := range rows[0] {
 		if isFilter && value == "#" {
 			disableColumnIndexes = append(disableColumnIndexes, index)
-		} else {
-			enableColumnNames = append(enableColumnNames, value)
 		}
 	}
 
@@ -82,7 +81,7 @@ func filterColumn(rows [][]string, isFilter bool) ([]string, [][]string) {
 		newRows = append(newRows, newRow)
 	}
 
-	return enableColumnNames, newRows
+	return newRows
 }
 
 // ConvertMap
@@ -228,8 +227,8 @@ func UpdateCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 		}
 	}
 
-	baseCSV = deleteCSV(baseCSV, editCSV)
-	baseCSV = insertCSV(baseCSV, editCSV)
+	baseCSV = DeleteCSV(baseCSV, editCSV)
+	baseCSV = InsertCSV(baseCSV, editCSV)
 
 	return baseCSV
 }
@@ -240,7 +239,7 @@ func LoadFileFirstContent(directoryPath string, fileName string) string {
 	}
 	baseCsvFilePaths, err := GetFilePathRecursive(directoryPath)
 	if err != nil {
-		log.Fatal("findBaseFilesWithWalkDirError: ", err)
+		log.Fatal("LoadFileFirstContentError: ", err)
 	}
 
 	if len(baseCsvFilePaths) == 0 {
@@ -250,7 +249,7 @@ func LoadFileFirstContent(directoryPath string, fileName string) string {
 	var result string
 	for _, path := range baseCsvFilePaths {
 		if filepath.Base(path) == fileName {
-			rows, _ := LoadCsv(path, true)
+			rows := LoadCsv(path, true, false)
 			row := rows[0]
 			result = row[0]
 			break
@@ -258,7 +257,7 @@ func LoadFileFirstContent(directoryPath string, fileName string) string {
 	}
 
 	if result == "" {
-		log.Fatal("Version file not found : version.csv")
+		log.Fatal("The content could not be found : ", fileName)
 	}
 
 	return result
