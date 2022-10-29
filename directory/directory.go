@@ -32,3 +32,15 @@ func GetNames(path string) []string {
 
 	return names
 }
+
+func ExistMulti(parentPaths []string) bool {
+	isExist := false
+
+	for _, path := range parentPaths {
+		if Exist(path) {
+			isExist = true
+		}
+	}
+
+	return isExist
+}

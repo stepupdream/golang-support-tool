@@ -11,6 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/stepupdream/golang-support-tool/array"
+	"github.com/stepupdream/golang-support-tool/directory"
 )
 
 // Key Make keys into structures to achieve multidimensional arrays.
@@ -20,7 +21,7 @@ type Key struct {
 }
 
 // LoadCsv Reading CSV files
-func LoadCsv(filepath string, isFilter bool) [][]string {
+func LoadCsv(filepath string, isFilter bool) ([][]string, []string) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal("CSVFileOpenError: ", err)
@@ -54,7 +55,34 @@ func LoadCsv(filepath string, isFilter bool) [][]string {
 		log.Fatal("CSVReadAllError: ", err)
 	}
 
-	return rows
+	enableColumnNames, newRows := filterColumn(rows, isFilter)
+
+	return newRows, enableColumnNames
+}
+
+func filterColumn(rows [][]string, isFilter bool) ([]string, [][]string) {
+	var enableColumnNames []string
+	var disableColumnIndexes []int
+	for index, value := range rows[0] {
+		if isFilter && value == "#" {
+			disableColumnIndexes = append(disableColumnIndexes, index)
+		} else {
+			enableColumnNames = append(enableColumnNames, value)
+		}
+	}
+
+	var newRows [][]string
+	for _, row := range rows {
+		var newRow []string
+		for index, value := range row {
+			if !array.IntContains(disableColumnIndexes, index) {
+				newRow = append(newRow, value)
+			}
+		}
+		newRows = append(newRows, newRow)
+	}
+
+	return enableColumnNames, newRows
 }
 
 // ConvertMap
@@ -152,4 +180,86 @@ func NewFile(path string, rows [][]string) {
 	if err := writer.WriteAll(rows); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func deleteCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+	baseIds := PluckId(baseCSV)
+
+	for key, _ := range editCSV {
+		if key.Key == "id" {
+			if !array.IntContains(baseIds, key.Id) {
+				log.Fatal("Attempted to delete a non-existent ID : id ", key.Id)
+			}
+		}
+		delete(baseCSV, Key{Id: key.Id, Key: key.Key})
+	}
+
+	return baseCSV
+}
+
+func insertCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+	baseIds := PluckId(baseCSV)
+	editIds := PluckId(editCSV)
+
+	for _, id := range editIds {
+		if array.IntContains(baseIds, id) {
+			log.Fatal("Tried to do an insert on an existing ID : id ", id)
+		}
+	}
+
+	result := make(map[Key]string)
+
+	for mapKey, value := range baseCSV {
+		result[Key{Id: mapKey.Id, Key: mapKey.Key}] = value
+	}
+	for mapKey, value := range editCSV {
+		result[Key{Id: mapKey.Id, Key: mapKey.Key}] = value
+	}
+
+	return result
+}
+
+func updateCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+	baseIds := PluckId(baseCSV)
+	editIds := PluckId(editCSV)
+	for _, id := range editIds {
+		if !array.IntContains(baseIds, id) {
+			log.Fatal("Tried to update a non-existent ID : id ", id)
+		}
+	}
+
+	baseCSV = deleteCSV(baseCSV, editCSV)
+	baseCSV = insertCSV(baseCSV, editCSV)
+
+	return baseCSV
+}
+
+func LoadFileFirstContent(directoryPath string, fileName string) string {
+	if !directory.Exist(directoryPath) {
+		log.Fatal("The directory could not be found : ", directoryPath)
+	}
+	baseCsvFilePaths, err := GetFilePathRecursive(directoryPath)
+	if err != nil {
+		log.Fatal("findBaseFilesWithWalkDirError: ", err)
+	}
+
+	if len(baseCsvFilePaths) == 0 {
+		return ""
+	}
+
+	var result string
+	for _, path := range baseCsvFilePaths {
+		if filepath.Base(path) == fileName {
+			rows, _ := LoadCsv(path, true)
+			row := rows[0]
+			result = row[0]
+			break
+		}
+	}
+
+	if result == "" {
+		log.Fatal("Version file not found : version.csv")
+	}
+
+	return result
 }
