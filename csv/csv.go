@@ -328,7 +328,7 @@ func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCSV ma
 				continue
 			}
 
-			editCSVMap := loadCsvMap(csvFilePath, filterColumnNumbers, true, true)
+			editCSVMap := LoadCsvMap(csvFilePath, filterColumnNumbers, true, true)
 
 			editIds := PluckId(editCSVMap)
 			editIdsAll = append(editIdsAll, editIds...)
