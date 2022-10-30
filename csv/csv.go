@@ -21,7 +21,7 @@ type Key struct {
 	Key string
 }
 
-func loadCsvMap(filePath string, filterColumnNumbers []int, isRowExclusion bool, isColumnExclusion bool) map[Key]string {
+func LoadCsvMap(filePath string, filterColumnNumbers []int, isRowExclusion bool, isColumnExclusion bool) map[Key]string {
 	var rows [][]string
 	if !supportFile.Exists(filePath) {
 		return make(map[Key]string)
@@ -288,7 +288,7 @@ func LoadFileFirstContent(directoryPath string, fileName string) string {
 	return result
 }
 
-func filterColumnNumbers(filepath string, filterColumnNames []string) []int {
+func FilterColumnNumbers(filepath string, filterColumnNames []string) []int {
 	rows := LoadCsv(filepath, true, false)
 
 	// Get the column number of the column to filter
