@@ -7,9 +7,8 @@ import (
 
 func TestDeleteCSV(t *testing.T) {
 	type args struct {
-		baseCSV     map[Key]string
-		editCSV     map[Key]string
-		filterNames []string
+		baseCSV map[Key]string
+		editCSV map[Key]string
 	}
 	tests := []struct {
 		name string
@@ -27,7 +26,6 @@ func TestDeleteCSV(t *testing.T) {
 				editCSV: map[Key]string{
 					{Id: 3, Key: "id"}: "3", {Id: 3, Key: "name"}: "cccc",
 				},
-				filterNames: []string{"id", "name"},
 			},
 			want: map[Key]string{
 				{Id: 1, Key: "id"}: "1", {Id: 1, Key: "name"}: "aaaa",
@@ -149,9 +147,9 @@ func TestLoadFileFirstContent(t *testing.T) {
 
 func TestLoadCsv(t *testing.T) {
 	type args struct {
-		filepath       string
-		isRowFilter    bool
-		isColumnFilter bool
+		filepath          string
+		isRowExclusion    bool
+		isColumnExclusion bool
 	}
 	tests := []struct {
 		name  string
@@ -162,9 +160,9 @@ func TestLoadCsv(t *testing.T) {
 		{
 			name: "LoadCsv",
 			args: args{
-				filepath:       "test/sample2.csv",
-				isRowFilter:    false,
-				isColumnFilter: false,
+				filepath:          "test/sample2.csv",
+				isRowExclusion:    false,
+				isColumnExclusion: false,
 			},
 			want: [][]string{
 				{"id", "sample", "#", "level"},
@@ -175,9 +173,9 @@ func TestLoadCsv(t *testing.T) {
 		{
 			name: "LoadCsv2",
 			args: args{
-				filepath:       "test/sample2.csv",
-				isRowFilter:    true,
-				isColumnFilter: true,
+				filepath:          "test/sample2.csv",
+				isRowExclusion:    true,
+				isColumnExclusion: true,
 			},
 			want: [][]string{
 				{"id", "sample", "level"},
@@ -187,7 +185,7 @@ func TestLoadCsv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := LoadCsv(tt.args.filepath, tt.args.isRowFilter, tt.args.isColumnFilter)
+			got := LoadCsv(tt.args.filepath, tt.args.isRowExclusion, tt.args.isColumnExclusion)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("LoadCsv() got = %v, want %v", got, tt.want)
 			}
