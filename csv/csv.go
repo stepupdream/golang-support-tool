@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stepupdream/golang-support-tool/array"
 	"github.com/stepupdream/golang-support-tool/directory"
+	supportFile "github.com/stepupdream/golang-support-tool/file"
 )
 
 // Key Make keys into structures to achieve multidimensional arrays.
@@ -20,8 +21,19 @@ type Key struct {
 	Key string
 }
 
+func loadCsvMap(filePath string, filterColumnNumbers []int, isRowExclusion bool, isColumnExclusion bool) map[Key]string {
+	var rows [][]string
+	if !supportFile.Exists(filePath) {
+		return make(map[Key]string)
+	}
+
+	rows = LoadCsv(filePath, isRowExclusion, isColumnExclusion)
+
+	return ConvertMap(rows, filterColumnNumbers, filePath)
+}
+
 // LoadCsv Reading CSV files
-func LoadCsv(filepath string, isRowFilter bool, isColumnFilter bool) [][]string {
+func LoadCsv(filepath string, isRowExclusion bool, isColumnExclusion bool) [][]string {
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal("CSVFileOpenError: ", err)
@@ -47,7 +59,7 @@ func LoadCsv(filepath string, isRowFilter bool, isColumnFilter bool) [][]string 
 	}
 
 	csvReader := csv.NewReader(reader)
-	if isRowFilter {
+	if isRowExclusion {
 		csvReader.Comment = '#'
 	}
 	rows, err := csvReader.ReadAll()
@@ -55,17 +67,17 @@ func LoadCsv(filepath string, isRowFilter bool, isColumnFilter bool) [][]string 
 		log.Fatal("CSVReadAllError: ", err)
 	}
 
-	if isColumnFilter {
-		return filterColumn(rows, isColumnFilter)
+	if isColumnExclusion {
+		return exclusionColumn(rows, isColumnExclusion)
 	}
 
 	return rows
 }
 
-func filterColumn(rows [][]string, isFilter bool) [][]string {
+func exclusionColumn(rows [][]string, isExclusion bool) [][]string {
 	var disableColumnIndexes []int
 	for index, value := range rows[0] {
-		if isFilter && value == "#" {
+		if isExclusion && value == "#" {
 			disableColumnIndexes = append(disableColumnIndexes, index)
 		}
 	}
@@ -87,7 +99,7 @@ func filterColumn(rows [][]string, isFilter bool) [][]string {
 // ConvertMap
 // Replacing CSV data (two-dimensional array of height and width) into a multidimensional associative array in a format
 // that facilitates direct value specification by key.
-func ConvertMap(rows [][]string, columnNumbers []int, filepath string) map[Key]string {
+func ConvertMap(rows [][]string, filterColumnNumbers []int, filepath string) map[Key]string {
 	result := make(map[Key]string)
 	keyName := map[int]string{}
 	findIdColumn := false
@@ -105,7 +117,7 @@ func ConvertMap(rows [][]string, columnNumbers []int, filepath string) map[Key]s
 				continue
 			}
 
-			if len(columnNumbers) == 0 || array.IntContains(columnNumbers, columnNumber) {
+			if len(filterColumnNumbers) == 0 || array.IntContains(filterColumnNumbers, columnNumber) {
 				id, _ := strconv.Atoi(row[idColumnNumber])
 
 				if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
@@ -131,7 +143,20 @@ func PluckId(csv map[Key]string) []int {
 			ids = append(ids, mapKey.Id)
 		}
 	}
+
 	return ids
+}
+
+func PluckKey(csv map[Key]string, key string) []string {
+	var values []string
+
+	for mapKey, value := range csv {
+		if mapKey.Key == key {
+			values = append(values, value)
+		}
+	}
+
+	return values
 }
 
 func GetFilePathRecursive(path string) ([]string, error) {
@@ -261,4 +286,53 @@ func LoadFileFirstContent(directoryPath string, fileName string) string {
 	}
 
 	return result
+}
+
+func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCSV map[Key]string, filterColumnNumbers []int) map[Key]string {
+	loadTypes := []string{"insert", "update", "delete"}
+	if !directory.Exist(directoryPath+"/"+loadTypes[0]+"/") &&
+		!directory.Exist(directoryPath+"/"+loadTypes[1]+"/") &&
+		!directory.Exist(directoryPath+"/"+loadTypes[2]+"/") {
+		log.Fatal("Neither insert/update/delete directories were found : ", directoryPath)
+	}
+
+	var editIdsAll []int
+
+	for _, loadType := range loadTypes {
+		loadTypePath := directoryPath + "/" + loadType + "/"
+		if !directory.Exist(loadTypePath) {
+			continue
+		}
+
+		csvFilePaths, err := GetFilePathRecursive(loadTypePath)
+		if err != nil {
+			log.Fatal("GetFilePathRecursiveError: ", err)
+		}
+
+		for _, csvFilePath := range csvFilePaths {
+			if fileName != filepath.Base(csvFilePath) {
+				continue
+			}
+
+			editCSVMap := loadCsvMap(csvFilePath, filterColumnNumbers, true, true)
+
+			editIds := PluckId(editCSVMap)
+			editIdsAll = append(editIdsAll, editIds...)
+
+			switch loadType {
+			case "insert":
+				baseCSV = InsertCSV(baseCSV, editCSVMap)
+			case "update":
+				baseCSV = UpdateCSV(baseCSV, editCSVMap)
+			case "delete":
+				baseCSV = DeleteCSV(baseCSV, editCSVMap)
+			}
+		}
+	}
+
+	if !array.IsArrayUnique(editIdsAll) {
+		log.Fatal("ID is not unique : ", directoryPath, " ", fileName)
+	}
+
+	return baseCSV
 }
