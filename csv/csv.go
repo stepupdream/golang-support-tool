@@ -21,13 +21,17 @@ type Key struct {
 	Key string
 }
 
-func LoadCsvMap(filePath string, filterColumnNumbers []int, isRowExclusion bool, isColumnExclusion bool) map[Key]string {
+func LoadCsvMap(filePath string, filterNames []string, isRowExclusion bool, isColumnExclusion bool) map[Key]string {
 	var rows [][]string
 	if !supportFile.Exists(filePath) {
 		return make(map[Key]string)
 	}
 
+	var filterColumnNumbers []int
 	rows = LoadCsv(filePath, isRowExclusion, isColumnExclusion)
+	if len(filterNames) != 0 {
+		filterColumnNumbers = FilterColumnNumbers(filePath, filterNames)
+	}
 
 	return ConvertMap(rows, filterColumnNumbers, filePath)
 }
@@ -302,7 +306,7 @@ func FilterColumnNumbers(filepath string, filterColumnNames []string) []int {
 	return columnNumbers
 }
 
-func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCSV map[Key]string, filterColumnNumbers []int) map[Key]string {
+func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCsvMap map[Key]string, filterNames []string) map[Key]string {
 	loadTypes := []string{"insert", "update", "delete"}
 	if !directory.Exist(directoryPath+"/"+loadTypes[0]+"/") &&
 		!directory.Exist(directoryPath+"/"+loadTypes[1]+"/") &&
@@ -328,18 +332,23 @@ func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCSV ma
 				continue
 			}
 
-			editCSVMap := LoadCsvMap(csvFilePath, filterColumnNumbers, true, true)
+			var editCsvMap map[Key]string
+			if len(filterNames) != 0 {
+				editCsvMap = LoadCsvMap(csvFilePath, filterNames, true, false)
+			} else {
+				editCsvMap = LoadCsvMap(csvFilePath, filterNames, true, true)
+			}
 
-			editIds := PluckId(editCSVMap)
+			editIds := PluckId(editCsvMap)
 			editIdsAll = append(editIdsAll, editIds...)
 
 			switch loadType {
 			case "insert":
-				baseCSV = InsertCSV(baseCSV, editCSVMap)
+				baseCsvMap = InsertCSV(baseCsvMap, editCsvMap)
 			case "update":
-				baseCSV = UpdateCSV(baseCSV, editCSVMap)
+				baseCsvMap = UpdateCSV(baseCsvMap, editCsvMap)
 			case "delete":
-				baseCSV = DeleteCSV(baseCSV, editCSVMap)
+				baseCsvMap = DeleteCSV(baseCsvMap, editCsvMap)
 			}
 		}
 	}
@@ -348,5 +357,5 @@ func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCSV ma
 		log.Fatal("ID is not unique : ", directoryPath, " ", fileName)
 	}
 
-	return baseCSV
+	return baseCsvMap
 }
