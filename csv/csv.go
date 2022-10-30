@@ -288,6 +288,20 @@ func LoadFileFirstContent(directoryPath string, fileName string) string {
 	return result
 }
 
+func filterColumnNumbers(filepath string, filterColumnNames []string) []int {
+	rows := LoadCsv(filepath, true, false)
+
+	// Get the column number of the column to filter
+	var columnNumbers []int
+	for columnNumber, columnName := range rows[0] {
+		if array.StrContains(filterColumnNames, columnName) {
+			columnNumbers = append(columnNumbers, columnNumber)
+		}
+	}
+
+	return columnNumbers
+}
+
 func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCSV map[Key]string, filterColumnNumbers []int) map[Key]string {
 	loadTypes := []string{"insert", "update", "delete"}
 	if !directory.Exist(directoryPath+"/"+loadTypes[0]+"/") &&
