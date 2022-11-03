@@ -127,6 +127,9 @@ func ConvertMap(rows [][]string, filterColumnNumbers []int, filepath string) map
 				if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
 					log.Fatal("ID is not unique : ", filepath)
 				}
+				if value == "" {
+					log.Fatal("Blank space is prohibited because it is impossible to determine if you forgot to enter the information. : ", filepath, " rowNumber : ", rowNumber)
+				}
 				result[Key{id, keyName[columnNumber]}] = value
 			}
 		}
