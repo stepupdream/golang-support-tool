@@ -213,13 +213,13 @@ func NewFile(path string, rows [][]string) {
 	}
 }
 
-func DeleteCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+func DeleteCSV(baseCSV map[Key]string, editCSV map[Key]string, csvFilePath string) map[Key]string {
 	baseIds := PluckId(baseCSV)
 
 	for key, _ := range editCSV {
 		if key.Key == "id" {
 			if !array.IntContains(baseIds, key.Id) {
-				log.Fatal("Attempted to delete a non-existent ID : id ", key.Id)
+				log.Fatal("Attempted to delete a non-existent ID : id ", key.Id, " ", csvFilePath)
 			}
 		}
 		delete(baseCSV, Key{Id: key.Id, Key: key.Key})
@@ -228,13 +228,13 @@ func DeleteCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 	return baseCSV
 }
 
-func InsertCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+func InsertCSV(baseCSV map[Key]string, editCSV map[Key]string, csvFilePath string) map[Key]string {
 	baseIds := PluckId(baseCSV)
 	editIds := PluckId(editCSV)
 
 	for _, id := range editIds {
 		if array.IntContains(baseIds, id) {
-			log.Fatal("Tried to do an insert on an existing ID : id ", id)
+			log.Fatal("Tried to do an insert on an existing ID : id ", id, " ", csvFilePath)
 		}
 	}
 
@@ -250,17 +250,17 @@ func InsertCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
 	return result
 }
 
-func UpdateCSV(baseCSV map[Key]string, editCSV map[Key]string) map[Key]string {
+func UpdateCSV(baseCSV map[Key]string, editCSV map[Key]string, csvFilePath string) map[Key]string {
 	baseIds := PluckId(baseCSV)
 	editIds := PluckId(editCSV)
 	for _, id := range editIds {
 		if !array.IntContains(baseIds, id) {
-			log.Fatal("Tried to update a non-existent ID : id ", id)
+			log.Fatal("Tried to update a non-existent ID : id ", id, " ", csvFilePath)
 		}
 	}
 
-	baseCSV = DeleteCSV(baseCSV, editCSV)
-	baseCSV = InsertCSV(baseCSV, editCSV)
+	baseCSV = DeleteCSV(baseCSV, editCSV, csvFilePath)
+	baseCSV = InsertCSV(baseCSV, editCSV, csvFilePath)
 
 	return baseCSV
 }
@@ -347,11 +347,11 @@ func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCsvMap
 
 			switch loadType {
 			case "insert":
-				baseCsvMap = InsertCSV(baseCsvMap, editCsvMap)
+				baseCsvMap = InsertCSV(baseCsvMap, editCsvMap, csvFilePath)
 			case "update":
-				baseCsvMap = UpdateCSV(baseCsvMap, editCsvMap)
+				baseCsvMap = UpdateCSV(baseCsvMap, editCsvMap, csvFilePath)
 			case "delete":
-				baseCsvMap = DeleteCSV(baseCsvMap, editCsvMap)
+				baseCsvMap = DeleteCSV(baseCsvMap, editCsvMap, csvFilePath)
 			}
 		}
 	}
