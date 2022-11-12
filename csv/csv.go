@@ -310,7 +310,8 @@ func FilterColumnNumbers(filepath string, filterColumnNames []string) []int {
 }
 
 func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCsvMap map[Key]string, filterNames []string) map[Key]string {
-	loadTypes := []string{"insert", "update", "delete"}
+	// Avoid immediately UPDATING an INSET record within the same version (since it is an unintended update).
+	loadTypes := []string{"delete", "update", "insert"}
 	if !directory.Exist(directoryPath+"/"+loadTypes[0]+"/") &&
 		!directory.Exist(directoryPath+"/"+loadTypes[1]+"/") &&
 		!directory.Exist(directoryPath+"/"+loadTypes[2]+"/") {
