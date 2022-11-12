@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/stepupdream/golang-support-tool/array"
@@ -22,14 +21,14 @@ type Key struct {
 	Key string
 }
 
-func LoadCsvMap(filePath string, filterNames []string, isRowExclusion bool, isColumnExclusion bool) map[Key]string {
+func LoadCsvMap(filePath string, filterNames []string, isColumnExclusion bool) map[Key]string {
 	var rows [][]string
 	if !supportFile.Exists(filePath) {
 		return make(map[Key]string)
 	}
 
 	var filterColumnNumbers []int
-	rows = LoadCsv(filePath, isRowExclusion, isColumnExclusion)
+	rows = LoadCsv(filePath, true, isColumnExclusion)
 	if len(filterNames) != 0 {
 		filterColumnNumbers = FilterColumnNumbers(filePath, filterNames)
 	}
@@ -127,11 +126,6 @@ func ConvertMap(rows [][]string, filterColumnNumbers []int, filepath string) map
 			}
 
 			id, _ := strconv.Atoi(row[idColumnNumber])
-			if strings.HasPrefix(row[0], "#") {
-				result[Key{id, keyName[columnNumber]}] = value
-				continue
-			}
-
 			if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
 				log.Fatal("ID is not unique : ", filepath)
 			}
@@ -345,9 +339,9 @@ func LoadNewCsvByDirectoryPath(directoryPath string, fileName string, baseCsvMap
 
 			var editCsvMap map[Key]string
 			if len(filterNames) != 0 {
-				editCsvMap = LoadCsvMap(csvFilePath, filterNames, true, false)
+				editCsvMap = LoadCsvMap(csvFilePath, filterNames, false)
 			} else {
-				editCsvMap = LoadCsvMap(csvFilePath, filterNames, true, true)
+				editCsvMap = LoadCsvMap(csvFilePath, filterNames, true)
 			}
 
 			editIds := PluckId(editCsvMap)
