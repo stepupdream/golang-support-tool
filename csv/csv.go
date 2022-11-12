@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/stepupdream/golang-support-tool/array"
@@ -121,17 +122,23 @@ func ConvertMap(rows [][]string, filterColumnNumbers []int, filepath string) map
 				continue
 			}
 
-			if len(filterColumnNumbers) == 0 || array.IntContains(filterColumnNumbers, columnNumber) {
-				id, _ := strconv.Atoi(row[idColumnNumber])
-
-				if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
-					log.Fatal("ID is not unique : ", filepath)
-				}
-				if value == "" {
-					log.Fatal("Blank space is prohibited because it is impossible to determine if you forgot to enter the information. : ", filepath, " rowNumber : ", rowNumber)
-				}
-				result[Key{id, keyName[columnNumber]}] = value
+			if len(filterColumnNumbers) != 0 && !array.IntContains(filterColumnNumbers, columnNumber) {
+				continue
 			}
+
+			id, _ := strconv.Atoi(row[idColumnNumber])
+			if strings.HasPrefix(row[0], "#") {
+				result[Key{id, keyName[columnNumber]}] = value
+				continue
+			}
+
+			if _, flg := result[Key{id, keyName[columnNumber]}]; flg {
+				log.Fatal("ID is not unique : ", filepath)
+			}
+			if value == "" {
+				log.Fatal("Blank space is prohibited because it is impossible to determine if you forgot to enter the information. : ", filepath, " rowNumber : ", rowNumber)
+			}
+			result[Key{id, keyName[columnNumber]}] = value
 		}
 	}
 
