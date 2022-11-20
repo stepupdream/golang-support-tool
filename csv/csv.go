@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -151,6 +152,8 @@ func PluckId(csv map[Key]string) []int {
 			ids = append(ids, mapKey.Id)
 		}
 	}
+
+	sort.Ints(ids)
 
 	return ids
 }
