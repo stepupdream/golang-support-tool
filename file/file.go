@@ -48,7 +48,7 @@ func BaseNamesByArray(paths []string, withExtension bool) []string {
 	return result
 }
 
-func fileCopy(basedPath string, targetPath string) {
+func Copy(basedPath string, targetPath string) {
 	if !directory.Exist(filepath.Dir(targetPath)) {
 		err := os.MkdirAll(filepath.Dir(targetPath), 0755)
 		if err != nil {
