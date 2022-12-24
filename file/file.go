@@ -1,9 +1,12 @@
 package file
 
 import (
+	"io"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/stepupdream/golang-support-tool/directory"
 )
 
 func Exists(path string) bool {
@@ -43,4 +46,28 @@ func BaseNamesByArray(paths []string, withExtension bool) []string {
 	}
 
 	return result
+}
+
+func fileCopy(basedPath string, targetPath string) {
+	if !directory.Exist(filepath.Dir(targetPath)) {
+		err := os.MkdirAll(filepath.Dir(targetPath), 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	newFile, err := os.Create(targetPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	oldFile, err := os.Open(basedPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = io.Copy(newFile, oldFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
