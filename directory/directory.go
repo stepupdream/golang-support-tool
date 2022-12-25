@@ -44,3 +44,20 @@ func ExistMulti(parentPaths []string) bool {
 
 	return isExist
 }
+
+func MaxFileName(directoryPath string) string {
+	maxName := ""
+	dirEntries, _ := os.ReadDir(directoryPath)
+	for _, dirEntry := range dirEntries {
+		if maxName == "" {
+			maxName = dirEntry.Name()
+			continue
+		}
+
+		if maxName < dirEntry.Name() {
+			maxName = dirEntry.Name()
+		}
+	}
+
+	return maxName
+}
