@@ -3,6 +3,8 @@ package directory
 import (
 	"log"
 	"os"
+
+	"github.com/stepupdream/golang-support-tool/array"
 )
 
 func Exist(path string) bool {
@@ -13,7 +15,7 @@ func Exist(path string) bool {
 	return true
 }
 
-func GetNames(path string) []string {
+func GetNames(path string, exclusionTexts []string) []string {
 	dir, err := os.Open(path)
 	if err != nil {
 		log.Fatal("Not found : ", err)
@@ -30,7 +32,14 @@ func GetNames(path string) []string {
 		log.Fatal("ReadDirError: ", err)
 	}
 
-	return names
+	var result []string
+	for _, name := range names {
+		if !array.StrContains(exclusionTexts, name) {
+			result = append(result, name)
+		}
+	}
+
+	return result
 }
 
 func ExistMulti(parentPaths []string) bool {
