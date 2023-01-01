@@ -1,4 +1,4 @@
-package csv
+package separated_value
 
 import (
 	"reflect"
@@ -33,9 +33,11 @@ func TestDeleteCSV(t *testing.T) {
 			},
 		},
 	}
+	var separatedValue SeparatedValue
+	separatedValue.Init("csv", ".csv")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DeleteCSV(tt.args.baseCSV, tt.args.editCSV, ""); !reflect.DeepEqual(got, tt.want) {
+			if got := separatedValue.delete(tt.args.baseCSV, tt.args.editCSV, ""); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("deleteCSV() = %v, want %v", got, tt.want)
 			}
 		})
@@ -72,9 +74,11 @@ func TestInsertCSV(t *testing.T) {
 			},
 		},
 	}
+	var separatedValue SeparatedValue
+	separatedValue.Init("csv", ".csv")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := InsertCSV(tt.args.baseCSV, tt.args.editCSV, ""); !reflect.DeepEqual(got, tt.want) {
+			if got := separatedValue.insert(tt.args.baseCSV, tt.args.editCSV, ""); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("insertCSV() = %v, want %v", got, tt.want)
 			}
 		})
@@ -108,9 +112,11 @@ func TestUpdateCSV(t *testing.T) {
 			},
 		},
 	}
+	var separatedValue SeparatedValue
+	separatedValue.Init("csv", ".csv")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := UpdateCSV(tt.args.baseCSV, tt.args.editCSV, ""); !reflect.DeepEqual(got, tt.want) {
+			if got := separatedValue.update(tt.args.baseCSV, tt.args.editCSV, ""); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("updateCSV() = %v, want %v", got, tt.want)
 			}
 		})
@@ -136,9 +142,11 @@ func TestLoadFileFirstContent(t *testing.T) {
 			want: "sample",
 		},
 	}
+	var separatedValue SeparatedValue
+	separatedValue.Init("csv", ".csv")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := LoadFileFirstContent(tt.args.directoryPath, tt.args.fileName); got != tt.want {
+			if got := separatedValue.LoadFileFirstContent(tt.args.directoryPath, tt.args.fileName); got != tt.want {
 				t.Errorf("LoadFileFirstContent() = %v, want %v", got, tt.want)
 			}
 		})
@@ -183,9 +191,11 @@ func TestLoadCsv(t *testing.T) {
 			},
 		},
 	}
+	var separatedValue SeparatedValue
+	separatedValue.Init("csv", ".csv")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := LoadCsv(tt.args.filepath, tt.args.isRowExclusion, tt.args.isColumnExclusion)
+			got := separatedValue.Load(tt.args.filepath, tt.args.isRowExclusion, tt.args.isColumnExclusion)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("LoadCsv() got = %v, want %v", got, tt.want)
 			}

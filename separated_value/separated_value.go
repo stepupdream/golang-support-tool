@@ -230,6 +230,10 @@ func (separatedValue *SeparatedValue) NewFile(path string, rows [][]string) {
 	writer := csv.NewWriter(separatedFile)
 	defer writer.Flush()
 
+	if separatedValue.separatedType == "tsv" {
+		writer.Comma = '\t'
+	}
+
 	if err := writer.WriteAll(rows); err != nil {
 		log.Fatal(err)
 	}
