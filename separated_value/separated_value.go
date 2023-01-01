@@ -36,7 +36,7 @@ func (separatedValue *SeparatedValue) GetExtension() string {
 	return separatedValue.extension
 }
 
-func (separatedValue *SeparatedValue) loadMap(filePath string, filterNames []string, isColumnExclusion bool) map[Key]string {
+func (separatedValue *SeparatedValue) LoadMap(filePath string, filterNames []string, isColumnExclusion bool) map[Key]string {
 	var rows [][]string
 	if !supportFile.Exists(filePath) {
 		return make(map[Key]string)
@@ -360,9 +360,9 @@ func (separatedValue *SeparatedValue) LoadByDirectoryPath(directoryPath string, 
 
 			var editSeparatedValueMap map[Key]string
 			if len(filterNames) != 0 {
-				editSeparatedValueMap = separatedValue.loadMap(filePath, filterNames, false)
+				editSeparatedValueMap = separatedValue.LoadMap(filePath, filterNames, false)
 			} else {
-				editSeparatedValueMap = separatedValue.loadMap(filePath, filterNames, true)
+				editSeparatedValueMap = separatedValue.LoadMap(filePath, filterNames, true)
 			}
 
 			editIds := separatedValue.PluckId(editSeparatedValueMap)
