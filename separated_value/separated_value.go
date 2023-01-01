@@ -1,4 +1,4 @@
-package csv
+package separated_value
 
 import (
 	"bufio"
