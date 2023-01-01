@@ -18,7 +18,7 @@ import (
 
 type SeparatedValue struct {
 	separatedType string
-	extension string
+	extension     string
 }
 
 func (separatedValue *SeparatedValue) Init(separatedType string, extension string) {
@@ -32,14 +32,18 @@ type Key struct {
 	Key string
 }
 
-func (separatedValue *SeparatedValue) loadSeparatedValueMap(filePath string, filterNames []string, isColumnExclusion bool) map[Key]string {
+func (separatedValue *SeparatedValue) GetExtension() string {
+	return separatedValue.extension
+}
+
+func (separatedValue *SeparatedValue) loadMap(filePath string, filterNames []string, isColumnExclusion bool) map[Key]string {
 	var rows [][]string
 	if !supportFile.Exists(filePath) {
 		return make(map[Key]string)
 	}
 
 	var filterColumnNumbers []int
-	rows = separatedValue.LoadSeparatedValue(filePath, true, isColumnExclusion)
+	rows = separatedValue.Load(filePath, true, isColumnExclusion)
 	if len(filterNames) != 0 {
 		filterColumnNumbers = separatedValue.filterColumnNumbers(filePath, filterNames)
 	}
@@ -47,8 +51,8 @@ func (separatedValue *SeparatedValue) loadSeparatedValueMap(filePath string, fil
 	return separatedValue.convertMap(rows, filterColumnNumbers, filePath)
 }
 
-// LoadSeparatedValue Reading separated value files
-func (separatedValue *SeparatedValue) LoadSeparatedValue(filepath string, isRowExclusion bool, isColumnExclusion bool) [][]string {
+// Load Reading separated value files
+func (separatedValue *SeparatedValue) Load(filepath string, isRowExclusion bool, isColumnExclusion bool) [][]string {
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal("LoadSeparatedValueOpenError: ", err)
@@ -231,56 +235,56 @@ func (separatedValue *SeparatedValue) NewFile(path string, rows [][]string) {
 	}
 }
 
-func (separatedValue *SeparatedValue) deleteSeparatedValue(baseSeparatedValue map[Key]string, editSeparatedValue map[Key]string, filePath string) map[Key]string {
-	baseIds := separatedValue.PluckId(baseSeparatedValue)
+func (separatedValue *SeparatedValue) delete(baseMap map[Key]string, editMap map[Key]string, filePath string) map[Key]string {
+	baseIds := separatedValue.PluckId(baseMap)
 
-	for key, _ := range editSeparatedValue {
+	for key, _ := range editMap {
 		if key.Key == "id" {
 			if !array.IntContains(baseIds, key.Id) {
 				log.Fatal("Attempted to delete a non-existent ID : id ", key.Id, " ", filePath)
 			}
 		}
-		delete(baseSeparatedValue, Key{Id: key.Id, Key: key.Key})
+		delete(baseMap, Key{Id: key.Id, Key: key.Key})
 	}
 
-	return baseSeparatedValue
+	return baseMap
 }
 
-func (separatedValue *SeparatedValue) insertSeparatedValue(baseSeparatedValue map[Key]string, editSeparatedValue map[Key]string, separatedValueFilePath string) map[Key]string {
-	baseIds := separatedValue.PluckId(baseSeparatedValue)
-	editIds := separatedValue.PluckId(editSeparatedValue)
+func (separatedValue *SeparatedValue) insert(baseMap map[Key]string, editMap map[Key]string, filePath string) map[Key]string {
+	baseIds := separatedValue.PluckId(baseMap)
+	editIds := separatedValue.PluckId(editMap)
 
 	for _, id := range editIds {
 		if array.IntContains(baseIds, id) {
-			log.Fatal("Tried to do an insert on an existing ID : id ", id, " ", separatedValueFilePath)
+			log.Fatal("Tried to do an insert on an existing ID : id ", id, " ", filePath)
 		}
 	}
 
 	result := make(map[Key]string)
 
-	for mapKey, value := range baseSeparatedValue {
+	for mapKey, value := range baseMap {
 		result[Key{Id: mapKey.Id, Key: mapKey.Key}] = value
 	}
-	for mapKey, value := range editSeparatedValue {
+	for mapKey, value := range editMap {
 		result[Key{Id: mapKey.Id, Key: mapKey.Key}] = value
 	}
 
 	return result
 }
 
-func (separatedValue *SeparatedValue) updateSeparatedValue(baseSeparatedValue map[Key]string, editSeparatedValue map[Key]string, separatedValueFilePath string) map[Key]string {
-	baseIds := separatedValue.PluckId(baseSeparatedValue)
-	editIds := separatedValue.PluckId(editSeparatedValue)
+func (separatedValue *SeparatedValue) update(baseMap map[Key]string, editMap map[Key]string, filePath string) map[Key]string {
+	baseIds := separatedValue.PluckId(baseMap)
+	editIds := separatedValue.PluckId(editMap)
 	for _, id := range editIds {
 		if !array.IntContains(baseIds, id) {
-			log.Fatal("Tried to update a non-existent ID : id ", id, " ", separatedValueFilePath)
+			log.Fatal("Tried to update a non-existent ID : id ", id, " ", filePath)
 		}
 	}
 
-	baseSeparatedValue = separatedValue.deleteSeparatedValue(baseSeparatedValue, editSeparatedValue, separatedValueFilePath)
-	baseSeparatedValue = separatedValue.insertSeparatedValue(baseSeparatedValue, editSeparatedValue, separatedValueFilePath)
+	baseMap = separatedValue.delete(baseMap, editMap, filePath)
+	baseMap = separatedValue.insert(baseMap, editMap, filePath)
 
-	return baseSeparatedValue
+	return baseMap
 }
 
 func (separatedValue *SeparatedValue) LoadFileFirstContent(directoryPath string, fileName string) string {
@@ -299,7 +303,7 @@ func (separatedValue *SeparatedValue) LoadFileFirstContent(directoryPath string,
 	var result string
 	for _, path := range baseSeparatedValueFilePaths {
 		if filepath.Base(path) == fileName {
-			rows := separatedValue.LoadSeparatedValue(path, true, false)
+			rows := separatedValue.Load(path, true, false)
 			row := rows[0]
 			result = row[0]
 			break
@@ -314,7 +318,7 @@ func (separatedValue *SeparatedValue) LoadFileFirstContent(directoryPath string,
 }
 
 func (separatedValue *SeparatedValue) filterColumnNumbers(filepath string, filterColumnNames []string) []int {
-	rows := separatedValue.LoadSeparatedValue(filepath, true, false)
+	rows := separatedValue.Load(filepath, true, false)
 
 	// Get the column number of the column to filter
 	var columnNumbers []int
@@ -327,7 +331,7 @@ func (separatedValue *SeparatedValue) filterColumnNumbers(filepath string, filte
 	return columnNumbers
 }
 
-func (separatedValue *SeparatedValue) LoadNewSeparatedValueByDirectoryPath(directoryPath string, fileName string, baseSeparatedValueMap map[Key]string, filterNames []string) map[Key]string {
+func (separatedValue *SeparatedValue) LoadByDirectoryPath(directoryPath string, fileName string, baseMap map[Key]string, filterNames []string) map[Key]string {
 	// Avoid immediately UPDATING an INSET record within the same version (since it is an unintended update).
 	loadTypes := []string{"delete", "update", "insert"}
 	if !directory.Exist(directoryPath+"/"+loadTypes[0]+"/") &&
@@ -356,9 +360,9 @@ func (separatedValue *SeparatedValue) LoadNewSeparatedValueByDirectoryPath(direc
 
 			var editSeparatedValueMap map[Key]string
 			if len(filterNames) != 0 {
-				editSeparatedValueMap = separatedValue.loadSeparatedValueMap(filePath, filterNames, false)
+				editSeparatedValueMap = separatedValue.loadMap(filePath, filterNames, false)
 			} else {
-				editSeparatedValueMap = separatedValue.loadSeparatedValueMap(filePath, filterNames, true)
+				editSeparatedValueMap = separatedValue.loadMap(filePath, filterNames, true)
 			}
 
 			editIds := separatedValue.PluckId(editSeparatedValueMap)
@@ -366,11 +370,11 @@ func (separatedValue *SeparatedValue) LoadNewSeparatedValueByDirectoryPath(direc
 
 			switch loadType {
 			case "insert":
-				baseSeparatedValueMap = separatedValue.insertSeparatedValue(baseSeparatedValueMap, editSeparatedValueMap, filePath)
+				baseMap = separatedValue.insert(baseMap, editSeparatedValueMap, filePath)
 			case "update":
-				baseSeparatedValueMap = separatedValue.updateSeparatedValue(baseSeparatedValueMap, editSeparatedValueMap, filePath)
+				baseMap = separatedValue.update(baseMap, editSeparatedValueMap, filePath)
 			case "delete":
-				baseSeparatedValueMap = separatedValue.deleteSeparatedValue(baseSeparatedValueMap, editSeparatedValueMap, filePath)
+				baseMap = separatedValue.delete(baseMap, editSeparatedValueMap, filePath)
 			}
 		}
 	}
@@ -379,5 +383,5 @@ func (separatedValue *SeparatedValue) LoadNewSeparatedValueByDirectoryPath(direc
 		log.Fatal("ID is not unique : ", directoryPath, " ", fileName)
 	}
 
-	return baseSeparatedValueMap
+	return baseMap
 }
