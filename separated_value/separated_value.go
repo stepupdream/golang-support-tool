@@ -21,6 +21,11 @@ type SeparatedValue struct {
 	extension string
 }
 
+func (separatedValue *SeparatedValue) init(separatedType string, extension string) {
+	separatedValue.separatedType = separatedType
+	separatedValue.extension = extension
+}
+
 // Key Make keys into structures to achieve multidimensional arrays.
 type Key struct {
 	Id  int
