@@ -21,7 +21,7 @@ type SeparatedValue struct {
 	extension string
 }
 
-func (separatedValue *SeparatedValue) init(separatedType string, extension string) {
+func (separatedValue *SeparatedValue) Init(separatedType string, extension string) {
 	separatedValue.separatedType = separatedType
 	separatedValue.extension = extension
 }
